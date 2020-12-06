@@ -1,5 +1,5 @@
 
-/*
+
 create or replace function calculer_longueur_max(arg1 varchar(255), arg2 varchar(255)) returns integer as $$ 
 	declare 
 		len1 integer ;
@@ -17,9 +17,9 @@ create or replace function calculer_longueur_max(arg1 varchar(255), arg2 varchar
 
 	end ;
 $$ language plpgsql ;	
-*/	
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/	
-/*	
+
 create or replace function nb_occurrences( char(1),  varchar(100),  integer,  integer) returns integer as $$
 		declare
 			num integer ;
@@ -43,9 +43,9 @@ create or replace function nb_occurrences( char(1),  varchar(100),  integer,  in
 		return compteur2 ;
 		end ;
 $$ language plpgsql ;	
-*/
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-/*
+
 create or replace function nb_occurrences( char(1),  varchar(100),  integer,  integer) returns integer as $$
 		declare
 			num integer ;
@@ -70,9 +70,9 @@ create or replace function nb_occurrences( char(1),  varchar(100),  integer,  in
 		return compteur2 ;
 		end ;
 $$ language plpgsql ;	
-*/
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-/*
+
 create or replace function nb_occurrences( char(1),  varchar(100),  integer,  integer) returns integer as $$
 		declare
 			num integer ;
@@ -96,9 +96,9 @@ create or replace function nb_occurrences( char(1),  varchar(100),  integer,  in
 		return compteur2 ;
 		end ;
 $$ language plpgsql ;	
-*/
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-/*
+
 create or replace function getNbJoursParMois( date ) returns integer as $$
 	declare
 		aaa integer ;
@@ -109,9 +109,9 @@ create or replace function getNbJoursParMois( date ) returns integer as $$
 	return aaa ;
 	end ;
 $$ language plpgsql ;	
-*/		
+		
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-/*
+
 create or replace function dateSqlToDatefr( date ) returns text as $$
 	declare
 		
@@ -141,7 +141,7 @@ create or replace function dateSqlToDatefr( date ) returns text as $$
 	return aaa4 ;
 	end ;
 $$ language plpgsql ;			
-*/
+
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
 create or replace function getNomJour( date ) returns text as $$
@@ -165,10 +165,118 @@ create or replace function getNomJour( date ) returns text as $$
 	end;
 $$ language plpgsql ;
 
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
 
+create or replace function nb_Client_Debiteurs() returns integer as $$
+	declare 
+			i integer ;
+			ii integer ;
+			aaa operation%ROWTYPE ;
+			max integer ;	
+	begin
+			i := 0 ;
+			ii := 0 ;
+			select max(id_operation) into max from operation ;
+			while i < max
+				loop
+					if exists ( select num_compte from operation where type_operation = 'DEBIT' and num_compte = i) then
+						ii := ii + 1 ;
+					end if ;
+					i := i + 1 ;
+				end loop;		
+	return ii ; 
+	end;
+$$ language plpgsql ;
 
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
 
+create or replace function nb_client_ville( text ) returns integer as $$
+	declare
+			ville text ;
+			aaa text ;  
+			i integer ;
+			ii integer ;
+			iii integer ;
+			max integer ;
+			bbb integer ;
+		
+	begin
+			i := 1 ;
+			select max(num_client) into max from client ;
+			while i < max
+				loop
+					if exists ( select adresse_client from client where num_client = i ) then
+						select adresse_client into ville from client where num_client = i ;
+						aaa := split_part( ville , ', ' , 2 ) ;
+						
+						/*aaa := split_part( aaa , ' ' , 2 ) ;*/
+						ii := position( ' ' in aaa ) ;
+						iii := char_length( aaa ) ;
+						aaa := SUBSTR( aaa , ii + 1 , iii ) ;
+						
+						if lower( $1 ) = lower( aaa ) then
+							select count(num_client) into bbb from client where adresse_client = ville ;
+							return bbb ;
+						end if ;
+						else 
+							bbb := 0 ;
+					end if ;
+				i := i + 1 ;
+				end loop ; 
+			return bbb ;	
+	end;
+$$ language plpgsql ;
 
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
 
+create or replace function enr_client( text , text , text , text , text ) returns text as $$
+	declare
+		i integer ;
+		max integer ;
+		max2 integer ;
+		
+	begin
+		select max(num_client) into max from client ;
+		max := max + 1 ;
+		execute 'insert into client values ( '||max||' , '''||$1||''' , '''||$2||''' , '''||$3||''' , '''||$4||''' , '''||$5||''' )' ;
+		select max(num_client) into max2 from client ;
+		if exists ( select * from client where num_client = max and nom_client = $1 and prenom_client = $2 ) then
+			return 'bien enregistré' ;
+		end if;
+		return 'Echec de l enregistrement' ;
+	end;
+$$ language plpgsql ;
 
+/*--------------------------------------------------------------------------------------------------------------------------------------*/
+
+create or replace function azert( text ) returns text as $$
+	declare
+			ville text ;
+			aaa text ;  
+			i integer ;
+			max integer ;
+			bbb integer ;
+		
+	begin
+			i := 1 ;
+			select max(num_client) into max from client ;
+			while i < max
+				loop
+					if exists ( select adresse_client from client where num_client = i ) then
+						select adresse_client into ville from client where num_client = i ;
+						aaa := split_part( ville , ', ' , 2 ) ;
+						aaa := split_part( aaa , ' ' , 2 ) ;
+						
+						/*if lower( $1 ) = lower( aaa ) then
+							select count(num_client) into bbb from client where adresse_client = ville ;
+							aaa := '15' ;
+						end if ;
+						else 
+							aaa := '0';*/
+					end if ;
+				i := i + 1 ;
+				end loop ; 
+			return aaa ;	
+	end;
+$$ language plpgsql ;
 

@@ -131,10 +131,6 @@ $function$
 		pop date ;
 		
 	begin
-
-		/*if char_length($1::text) = 1 then
-			zz := concat('0',$1::text);
-		end if ;*/
 		
 		i := 1 ;
 		if $1 < 10 then
