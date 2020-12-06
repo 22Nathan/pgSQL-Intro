@@ -144,7 +144,26 @@ $$ language plpgsql ;
 */
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
 
-
+create or replace function getNomJour( date ) returns text as $$
+	declare 
+			i integer ; 
+			aaa text ;
+	begin
+			i := extract(isodow from  $1) ;
+			case i
+				when 1 then aaa := 'Lundi';
+				when 2 then aaa := 'Mardi';
+				when 3 then aaa := 'Mercredi';
+				when 4 then aaa := 'Jeudi';
+				when 5 then aaa := 'Vendredi';
+				when 6 then aaa := 'Samdi';
+				when 7 then aaa := 'Dimanche';
+			end case;	
+			
+	return aaa ; 
+	
+	end;
+$$ language plpgsql ;
 
 
 
